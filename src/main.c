@@ -98,8 +98,8 @@ int main(void)
             nk_label(ctx, "Tileset Config", NK_TEXT_CENTERED);
 
             nk_layout_row_dynamic(ctx, 30, 2);
-            nk_property_int(ctx, "Tile Width ", 0, &tileset_property.tilewidth ,USHRT_MAX, 1, 1);
-            nk_property_int(ctx, "Tile Height ", 0, &tileset_property.tileheight ,USHRT_MAX, 1, 1);
+            nk_property_int(ctx, "Tile Width ", 0, &tileset_property.tilewidth, USHRT_MAX, 1, 1);
+            nk_property_int(ctx, "Tile Height ", 0, &tileset_property.tileheight, USHRT_MAX, 1, 1);
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Load Texture"))  {
