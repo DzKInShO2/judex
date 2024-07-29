@@ -26,6 +26,8 @@ int main(void)
     RenderTexture2D tileset_framebuffer = LoadRenderTexture(screen_width * 0.2f, screen_height * 0.4f);
     Camera2D tileset_viewport = { 0 };
     tileset_viewport.zoom = 3.0f;
+    tileset_viewport.target.x -= 5.0f;
+    tileset_viewport.target.y -= 5.0f;
 
     TileMap tilemap = tilemap_create(60, 20, 8, 8, 6);
     Texture2D texture = LoadTexture("res/default_tileset.png");
@@ -63,18 +65,29 @@ int main(void)
         }
         nk_end(ctx);
 
+        // Get Cursor Position
+        Vector2 cursor = GetMousePosition();
+
         // Handle Camera Movement
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
             Vector2 mouse_delta = GetMouseDelta();
 
-            viewport.target.x -= mouse_delta.x * 0.5f * (1/viewport.zoom * 3.0f);
-            viewport.target.y -= mouse_delta.y * 0.5f * (1/viewport.zoom * 3.0f);
+            if (cursor.x > (screen_width * 0.2f)) {
+                viewport.target.x -= mouse_delta.x * 0.5f * (1/viewport.zoom * 3.0f);
+                viewport.target.y -= mouse_delta.y * 0.5f * (1/viewport.zoom * 3.0f);
+            } else {
+                if (cursor.y < (screen_height * 0.4f)) {
+                    tileset_viewport.target.x -= mouse_delta.x * 0.25f * (1/tileset_viewport.zoom * 3.0f);
+                    tileset_viewport.target.y -= mouse_delta.y * 0.25f * (1/tileset_viewport.zoom * 3.0f);
+                }
+            }
         }
-        viewport.zoom += GetMouseWheelMove() * viewport.zoom * 0.25f;
+        if (cursor.y < (screen_height * 0.4f) && cursor.x < (screen_width * 0.2f))
+            tileset_viewport.zoom += GetMouseWheelMove() * tileset_viewport.zoom * 0.15f;
+        else viewport.zoom += GetMouseWheelMove() * viewport.zoom * 0.25f;
 
         // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Vector2 cursor = GetMousePosition();
             if (cursor.x > (screen_width * 0.205f)) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, viewport),
@@ -94,7 +107,6 @@ int main(void)
             }
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            Vector2 cursor = GetMousePosition();
             if (cursor.x > (screen_width * 0.205f)) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, viewport),
