@@ -2,12 +2,17 @@
 
 #include <raylib.h>
 
+#include "common.h"
+#include "tilemap.h"
+#include "tileset.h"
 #include "colorscheme.h"
+
+void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight);
 
 int main(void)
 {
-    uint32_t screen_width = 1920;
-    uint32_t screen_height = 1080;
+    u32 screen_width = 1920;
+    u32 screen_height = 1080;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "JuDex");
@@ -27,4 +32,15 @@ int main(void)
     }
     CloseWindow();
     return 0;
+}
+
+void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight)
+{
+    for (u16 i = 0; i < width + 1; ++i) {
+        DrawLine(i * tilewidth, 0, i * tilewidth, height * tileheight, GRID_COLOR);
+    }
+
+    for (u16 j = 0; j < height + 1; ++j) {
+        DrawLine(0, j * tileheight, width * tilewidth, j * tileheight, GRID_COLOR);
+    }
 }
