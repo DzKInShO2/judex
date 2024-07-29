@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <limits.h>
+#include <sys/stat.h>
 
 #include <raylib.h>
 
@@ -117,7 +118,10 @@ int main(void)
             if (nk_button_label(ctx, "Load Texture"))  {
                 tileset_property.texture_path = (char *)sfd_open_dialog(&file_open_opt);
 
-                if (tileset_property.texture_path != NULL) {
+                struct stat path_stat; 
+                stat(tileset_property.texture_path, &path_stat);
+                if (tileset_property.texture_path != NULL
+                    && S_ISREG(path_stat.st_mode)) {
                     UnloadTexture(texture);
                     texture = LoadTexture(tileset_property.texture_path);
 
