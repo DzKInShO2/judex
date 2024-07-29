@@ -38,6 +38,7 @@ void tileset_draw(TileSet *tileset)
 
 void tileset_unload(TileSet *tileset)
 {
+    if (tileset->texture != NULL)
+        free(tileset->slices);
     tileset->texture = NULL;
-    free(tileset->slices);
 }
