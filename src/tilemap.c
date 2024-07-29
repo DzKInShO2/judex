@@ -22,25 +22,17 @@ void tilemap_change_property(TileMap *tilemap, u16 width, u16 height, u16 tilewi
     if (tilemap->tilewidth != tilewidth) tilemap->tilewidth = tilewidth;
     if (tilemap->tileheight != tileheight) tilemap->tileheight = tileheight;
 
-    if (tilemap->width != width) is_regenerated = true;
-    if (tilemap->height != height) is_regenerated = true;
-    if (tilemap->layer_count != layer_count) is_regenerated = true;
+    if (tilemap->width != width || tilemap->height != height || tilemap->layer_count != layer_count)
+        is_regenerated = true;
 
     if (is_regenerated) {
         u16 *new_layers = calloc(width * height * layer_count, sizeof(*new_layers));
-
-        for (i8 i = 0; i < layer_count; ++i) {
-            for (u32 j = 0; j < tilemap->width * tilemap->height; ++j) {
-                int k = (i * (tilemap->width * tilemap->height)) + j;
-                new_layers[k] = tilemap->layers[k];
-            }
-        }
 
         tilemap->width = width;
         tilemap->height = height;
         tilemap->layer_count = layer_count;
 
-        free(tilemap->layers);
+        free((void *)tilemap->layers);
         tilemap->layers = new_layers;
     }
 }

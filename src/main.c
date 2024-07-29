@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <limits.h>
 
 #include <raylib.h>
 
@@ -39,6 +40,24 @@ int main(void)
     viewport.offset.x = screen_width/3.0f;
     viewport.offset.y = screen_height/3.0f;
 
+    struct {
+        i32 tilewidth, tileheight;
+        char texture_path[1024];
+    } tileset_property = { 
+        8, 8,
+        ""
+    };
+
+    struct {
+        i32 width, height;
+        i32 tilewidth, tileheight;
+        i32 layer_count;
+    } tilemap_property = {
+        8, 8,
+        8, 8,
+        6
+    };
+
     struct nk_context *ctx = InitNuklear(14);
 
     u8 layer_current = 0;
@@ -62,6 +81,44 @@ int main(void)
         if (nk_begin(ctx, "Options",
                      nk_rect(1, (screen_height * 0.4f), (screen_width * 0.2f), (screen_height * 0.6f)),
                      NK_WINDOW_BORDER)) {
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "Tileset Config", NK_TEXT_CENTERED);
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            nk_property_int(ctx, "Tile Width ", 0, &tileset_property.tilewidth ,USHRT_MAX, 1, 1);
+            nk_property_int(ctx, "Tile Height ", 0, &tileset_property.tileheight ,USHRT_MAX, 1, 1);
+
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (nk_button_label(ctx, "Change Texture"))  {
+            }
+
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (nk_button_label(ctx, "Apply Config"))  {
+            }
+
+            nk_layout_row_dynamic(ctx, 60, 1);
+            nk_spacer(ctx);
+
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "Tilemap Config", NK_TEXT_CENTERED);
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            nk_property_int(ctx, "Width", 0, &tilemap_property.width ,USHRT_MAX, 1, 1);
+            nk_property_int(ctx, "Height", 0, &tilemap_property.height ,USHRT_MAX, 1, 1);
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            nk_property_int(ctx, "Tile Width", 0,  &tilemap_property.tilewidth ,USHRT_MAX, 1, 1);
+            nk_property_int(ctx, "Tile Height", 0, &tilemap_property.tileheight ,USHRT_MAX, 1, 1);
+
+            nk_layout_row_dynamic(ctx, 30, 1);
+            nk_property_int(ctx, "Layer Count", 0, &tilemap_property.layer_count ,UCHAR_MAX, 1, 1);
+
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (nk_button_label(ctx, "Apply Config"))  {
+                tilemap_change_property(&tilemap, tilemap_property.width, tilemap_property.height,
+                                        tilemap_property.tilewidth, tilemap_property.tileheight,
+                                        tilemap_property.layer_count);
+            }
         }
         nk_end(ctx);
 
