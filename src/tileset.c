@@ -30,13 +30,15 @@ void tileset_load(TileSet *tileset, Texture2D *texture, u16 tilewidth, u16 tileh
 
 void tileset_draw(TileSet *tileset)
 {
-    DrawTexture(*tileset->texture, 0, 0, WHITE);
-    DrawRectangle(
-        (u32)(tileset->active % tileset->width) * tileset->tilewidth,
-        (u32)(tileset->active / tileset->width) * tileset->tileheight,
-        tileset->tilewidth, tileset->tileheight,
-        SELECTION_COLOR
-    );
+    if (tileset->texture != NULL) {
+        DrawTexture(*tileset->texture, 0, 0, WHITE);
+        DrawRectangle(
+            (u32)(tileset->active % tileset->width) * tileset->tilewidth,
+            (u32)(tileset->active / tileset->width) * tileset->tileheight,
+            tileset->tilewidth, tileset->tileheight,
+            SELECTION_COLOR
+        );
+    }
 }
 
 void tileset_set_active(TileSet *tileset, u16 x, u16 y)
@@ -49,4 +51,10 @@ void tileset_unload(TileSet *tileset)
     if (tileset->texture != NULL)
         free(tileset->slices);
     tileset->texture = NULL;
+
+    tileset->tilewidth  = 0;
+    tileset->tileheight = 0;
+
+    tileset->width  = 0;
+    tileset->height = 0;
 }

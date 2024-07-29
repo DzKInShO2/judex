@@ -41,9 +41,9 @@ int main(void)
     tileset_viewport.target.y -= 5.0f;
 
     TileMap tilemap = tilemap_create(60, 20, 8, 8, 6);
-    Texture2D texture = LoadTexture("res/default_tileset.png");
+    Texture2D texture;
 
-    tileset_load(&tileset, &texture, 8, 8);
+    tileset_load(&tileset, NULL, 8, 8);
 
     Camera2D viewport = { 0 };
     viewport.zoom = 2.0f;
