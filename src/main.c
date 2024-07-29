@@ -66,6 +66,8 @@ int main(void)
     struct nk_context *ctx = InitNuklear(14);
 
     u8 layer_current = 0;
+    bool layer_is_all_visible = false;
+    bool grid_is_visible = true;
     while (!WindowShouldClose()) {
         /* Update */
         // Update Window Size Variables
@@ -178,6 +180,11 @@ int main(void)
             else viewport.zoom += GetMouseWheelMove() * viewport.zoom * 0.25f;
         }
 
+        // Toggle Grid
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_SPACE)) grid_is_visible = !grid_is_visible;
+        // Toggle All Layer Visible
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) layer_is_all_visible = !layer_is_all_visible;
+
         // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             if (cursor.x > panel_bound_x) {
@@ -228,14 +235,20 @@ int main(void)
         BeginMode2D(viewport);
         // Draw Tilemap Content
         if (tileset.texture) {
-            tilemap_draw_layer(&tilemap, &tileset, layer_current);
+            if (layer_is_all_visible) {
+                for (u8 i = 0; i < tilemap.layer_count; ++i) {
+                    tilemap_draw_layer(&tilemap, &tileset, i);
+                }
+            } else tilemap_draw_layer(&tilemap, &tileset, layer_current);
         }
 
         // Draw Tilemap Grid
-        grid_draw(tilemap.width, tilemap.height,
-                  tilemap.tilewidth, tilemap.tileheight);
+        if (grid_is_visible)
+            grid_draw(tilemap.width, tilemap.height,
+                      tilemap.tilewidth, tilemap.tileheight);
         EndMode2D();
 
+        // Draw Tileset View
         DrawTextureRec(
             tileset_framebuffer.texture,
             (Rectangle){ 0, 0, tileset_framebuffer.texture.width, -tileset_framebuffer.texture.height},
@@ -243,7 +256,9 @@ int main(void)
             WHITE
         );
         
-        DrawText(TextFormat("%i", layer_current + 1), panel_bound_x, 0, 32, WHITE);
+        // Draw Layer Indicator
+        DrawText(TextFormat("%i", layer_current + 1), panel_bound_x, 0, 32, (layer_is_all_visible ? ORANGE : WHITE));
+
         DrawNuklear(ctx);
         EndDrawing();
     }
