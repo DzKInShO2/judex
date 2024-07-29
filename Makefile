@@ -1,8 +1,10 @@
 SOURCES := $(wildcard src/*.c)
-INCLUDES = -Ilib/raylib-nuklear/include
+SOURCES += lib/tinyfiledialogs/tinyfiledialogs.c
+
+INCLUDES = -Ilib/raylib-nuklear/include -Ilib/tinyfiledialogs
 
 CFLAGS = -Wall -Wpedantic -std=c11
-LDFLAGS = -lraylib
+LDFLAGS = -lraylib 
 
 all:
 	cc -o judex ${SOURCES} ${INCLUDES} ${CFLAGS} ${LDFLAGS} -ggdb
