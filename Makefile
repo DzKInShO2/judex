@@ -1,7 +1,6 @@
 SOURCES := $(wildcard src/*.c)
-SOURCES += lib/tinyfiledialogs/tinyfiledialogs.c
 
-INCLUDES = -Ilib/raylib-nuklear/include -Ilib/tinyfiledialogs
+INCLUDES = -Ilib/raylib-nuklear/include
 
 CFLAGS = -Wall -Wpedantic -std=c11
 LDFLAGS = -lraylib 

@@ -6,8 +6,6 @@
 #define RAYLIB_NUKLEAR_IMPLEMENTATION
 #include <raylib-nuklear.h>
 
-#include <tinyfiledialogs.h>
-
 #include "common.h"
 #include "tilemap.h"
 #include "tileset.h"
@@ -70,9 +68,6 @@ int main(void)
     u8 layer_current = 0;
     bool layer_is_all_visible = false;
     bool grid_is_visible = true;
-    const char *file_texture_open_filter[] = {
-        "*.png", "*.jpg", "*.jpeg"
-    };
     while (!WindowShouldClose()) {
         /* Update */
         // Update Window Size Variables
@@ -116,21 +111,6 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Load Texture"))  {
-                tileset_property.texture_path = tinyfd_openFileDialog(
-                    NULL, NULL,
-                    sizeof(file_texture_open_filter) / sizeof(*file_texture_open_filter),
-                    file_texture_open_filter,
-                    "Tileset Image", 0);
-
-                if (tileset_property.texture_path != NULL) {
-                    UnloadTexture(texture);
-                    texture = LoadTexture(tileset_property.texture_path);
-
-                    tileset_unload(&tileset);
-                    tileset_load(&tileset, &texture, tileset_property.tilewidth, tileset_property.tileheight);
-                    
-                    free((void *)tileset_property.texture_path);
-                }
             }
 
             nk_layout_row_dynamic(ctx, 60, 1);
