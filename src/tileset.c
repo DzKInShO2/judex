@@ -29,8 +29,8 @@ void tileset_draw(TileSet *tileset)
 {
     DrawTexture(*tileset->texture, 0, 0, WHITE);
     DrawRectangle(
-        (u32)(tileset->active % tileset->width),
-        (u32)(tileset->active / tileset->width),
+        (u32)(tileset->active % tileset->width) * tileset->tilewidth,
+        (u32)(tileset->active / tileset->width) * tileset->tileheight,
         tileset->tilewidth, tileset->tileheight,
         SELECTION_COLOR
     );

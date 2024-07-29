@@ -23,6 +23,10 @@ int main(void)
     InitWindow(screen_width, screen_height, "JuDex");
 
     TileSet tileset = { 0 };
+    RenderTexture2D tileset_framebuffer = LoadRenderTexture(screen_width * 0.2f, screen_height * 0.4f);
+    Camera2D tileset_viewport = { 0 };
+    tileset_viewport.zoom = 3.0f;
+
     TileMap tilemap = tilemap_create(60, 20, 8, 8, 6);
     Texture2D texture = LoadTexture("res/default_tileset.png");
 
@@ -45,13 +49,16 @@ int main(void)
 
             viewport.offset.x = screen_width/3.0f;
             viewport.offset.y = screen_height/3.0f;
+
+            UnloadRenderTexture(tileset_framebuffer);
+            tileset_framebuffer = LoadRenderTexture(screen_width * 0.2f, screen_height * 0.4f);
         }
 
         // Update Nuklear
         UpdateNuklear(ctx);
 
         if (nk_begin(ctx, "Options",
-                     nk_rect(1, (screen_height * 0.4), (screen_width * 0.2f), (screen_height * 0.6)),
+                     nk_rect(1, (screen_height * 0.4f), (screen_width * 0.2f), (screen_height * 0.6f)),
                      NK_WINDOW_BORDER)) {
         }
         nk_end(ctx);
@@ -76,6 +83,14 @@ int main(void)
                 if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
                     tilemap_set_tile(&tilemap, pos.x, pos.y, layer_current, tileset.active + 1);
                 }
+            } else {
+                Vector2 pos = grid_get_position(
+                    GetScreenToWorld2D(cursor, tileset_viewport),
+                    tileset.tilewidth, tileset.tileheight
+                );
+                if (grid_is_position_valid(pos, tileset.width, tileset.height)) {
+                    tileset_set_active(&tileset, pos.x, pos.y);
+                }
             }
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
@@ -92,6 +107,17 @@ int main(void)
         }
 
         /* Draw */
+        // TileSet Draw
+        BeginTextureMode(tileset_framebuffer);
+        ClearBackground(TILESET_COLOR);
+        BeginMode2D(tileset_viewport);
+        tileset_draw(&tileset);
+        grid_draw(tileset.width, tileset.height,
+                  tileset.tilewidth, tileset.tileheight);
+        EndMode2D();
+        EndTextureMode();
+
+        // Main Draw
         BeginDrawing();
         ClearBackground(BACKGROUND_COLOR);
 
@@ -106,12 +132,19 @@ int main(void)
                   tilemap.tilewidth, tilemap.tileheight);
         EndMode2D();
 
+        DrawTextureRec(
+            tileset_framebuffer.texture,
+            (Rectangle){ 0, 0, tileset_framebuffer.texture.width, -tileset_framebuffer.texture.height},
+            (Vector2){ 0, 0 },
+            WHITE
+        );
         DrawNuklear(ctx);
         EndDrawing();
     }
 
     tileset_unload(&tileset);
     UnloadTexture(texture);
+    UnloadRenderTexture(tileset_framebuffer);
 
     CloseWindow();
     return 0;
