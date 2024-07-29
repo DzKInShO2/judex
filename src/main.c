@@ -6,6 +6,8 @@
 #define RAYLIB_NUKLEAR_IMPLEMENTATION
 #include <raylib-nuklear.h>
 
+#include <sfd.h>
+
 #include "common.h"
 #include "tilemap.h"
 #include "tileset.h"
@@ -27,6 +29,8 @@ int main(void)
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "JuDex");
     SetExitKey(KEY_NULL);
+
+    struct nk_context *ctx = InitNuklear(14);
 
     TileSet tileset = { 0 };
     RenderTexture2D tileset_framebuffer = LoadRenderTexture(panel_width, panel_offy);
@@ -63,11 +67,19 @@ int main(void)
         6
     };
 
-    struct nk_context *ctx = InitNuklear(14);
+    /* File Dialog Options */
+    sfd_Options file_open_opt = {
+        .title = "Open Image File",
+        .filter_name = "Image File",
+        .filter = "*.png|*.jpg"
+    };
 
+    /* Editor Property */
     u8 layer_current = 0;
     bool layer_is_all_visible = false;
     bool grid_is_visible = true;
+
+    /* Main Loop */
     while (!WindowShouldClose()) {
         /* Update */
         // Update Window Size Variables
@@ -102,15 +114,24 @@ int main(void)
             nk_property_int(ctx, "Tile Height ", 0, &tileset_property.tileheight, USHRT_MAX, 1, 1);
 
             nk_layout_row_dynamic(ctx, 30, 1);
-            if (nk_button_label(ctx, "Apply Config"))  {
+            if (nk_button_label(ctx, "Load Texture"))  {
+                tileset_property.texture_path = sfd_open_dialog(&file_open_opt);
+
                 if (tileset_property.texture_path != NULL) {
+                    UnloadTexture(texture);
+                    texture = LoadTexture(tileset_property.texture_path);
+
                     tileset_unload(&tileset);
                     tileset_load(&tileset, &texture, tileset_property.tilewidth, tileset_property.tileheight);
                 }
             }
 
             nk_layout_row_dynamic(ctx, 30, 1);
-            if (nk_button_label(ctx, "Load Texture"))  {
+            if (nk_button_label(ctx, "Apply Config"))  {
+                if (tileset_property.texture_path != NULL) {
+                    tileset_unload(&tileset);
+                    tileset_load(&tileset, &texture, tileset_property.tilewidth, tileset_property.tileheight);
+                }
             }
 
             nk_layout_row_dynamic(ctx, 60, 1);

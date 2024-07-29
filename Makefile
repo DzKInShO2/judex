@@ -1,8 +1,9 @@
 SOURCES := $(wildcard src/*.c)
+SOURCES := ${SOURCES} lib/sfd/src/sfd.c
 
-INCLUDES = -Ilib/raylib-nuklear/include
+INCLUDES = -Ilib/raylib-nuklear/include -Ilib/sfd/src
 
-CFLAGS = -Wall -Wpedantic -std=c11
+CFLAGS = -Wall -Wpedantic
 LDFLAGS = -lraylib 
 
 all:
