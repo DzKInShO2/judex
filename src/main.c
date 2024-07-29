@@ -114,7 +114,7 @@ int main(void)
             nk_property_int(ctx, "Layer Count", 0, &tilemap_property.layer_count ,UCHAR_MAX, 1, 1);
 
             nk_layout_row_dynamic(ctx, 30, 1);
-            if (nk_button_label(ctx, "Apply Config"))  {
+            if (nk_button_label(ctx, "New Map"))  {
                 tilemap_change_property(&tilemap, tilemap_property.width, tilemap_property.height,
                                         tilemap_property.tilewidth, tilemap_property.tileheight,
                                         tilemap_property.layer_count);
