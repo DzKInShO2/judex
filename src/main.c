@@ -53,6 +53,30 @@ int main(void)
         }
         tilemap_cam.zoom += GetMouseWheelMove() * tilemap_cam.zoom * 0.25f;
 
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            Vector2 pos = grid_get_position(
+                GetScreenToWorld2D(GetMousePosition(), tilemap_cam),
+                tilemap.tilewidth, tilemap.tileheight
+            );
+            if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
+                tilemap.layers[
+                    (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
+                    ] = tileset.active + 1;
+            }
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+            Vector2 pos = grid_get_position(
+                GetScreenToWorld2D(GetMousePosition(), tilemap_cam),
+                tilemap.tilewidth, tilemap.tileheight
+            );
+            if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
+                tilemap.layers[
+                    (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
+                    ] = 0;
+            }
+        }
+
         /* Draw */
         BeginDrawing();
         ClearBackground(BACKGROUND_COLOR);
