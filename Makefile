@@ -1,5 +1,5 @@
 SOURCES := $(wildcard src/*.c)
-INCLUDES = -Ilib/raygui/src -Ilib/raygui/examples/custom_file_dialog/
+INCLUDES = -Ilib/raylib-nuklear/include
 
 CFLAGS = -Wall -Wpedantic -std=c11
 LDFLAGS = -lraylib

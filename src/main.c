@@ -2,6 +2,9 @@
 
 #include <raylib.h>
 
+#define RAYLIB_NUKLEAR_IMPLEMENTATION
+#include <raylib-nuklear.h>
+
 #include "common.h"
 #include "tilemap.h"
 #include "tileset.h"
@@ -30,6 +33,8 @@ int main(void)
     tilemap_cam.offset.x = screen_width/3.0f;
     tilemap_cam.offset.y = screen_height/3.0f;
 
+    struct nk_context *ctx = InitNuklear(14);
+
     u8 layer_current = 0;
     while (!WindowShouldClose()) {
         /* Update */
@@ -42,9 +47,16 @@ int main(void)
             tilemap_cam.offset.y = screen_height/3.0f;
         }
 
-        // Get Delta Time aka Time Passes Between Two Frames
-        // f64 dt = GetFrameTime();
+        // Update Nuklear
+        UpdateNuklear(ctx);
 
+        if (nk_begin(ctx, "Options",
+                     nk_rect(1, (screen_height * 0.4), (screen_width * 0.2f), (screen_height * 0.6)),
+                     NK_WINDOW_BORDER)) {
+        }
+        nk_end(ctx);
+
+        // Handle Camera Movement
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
             Vector2 mouse_delta = GetMouseDelta();
 
@@ -53,27 +65,34 @@ int main(void)
         }
         tilemap_cam.zoom += GetMouseWheelMove() * tilemap_cam.zoom * 0.25f;
 
+        // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            Vector2 pos = grid_get_position(
-                GetScreenToWorld2D(GetMousePosition(), tilemap_cam),
-                tilemap.tilewidth, tilemap.tileheight
-            );
-            if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
-                tilemap.layers[
-                    (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
-                    ] = tileset.active + 1;
+            Vector2 cursor = GetMousePosition();
+            if (!(cursor.x < (screen_width * 0.2f)
+                && cursor.y > (screen_height * 0.4))) {
+                Vector2 pos = grid_get_position(
+                    GetScreenToWorld2D(cursor, tilemap_cam),
+                    tilemap.tilewidth, tilemap.tileheight
+                );
+                if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
+                    tilemap.layers[
+                        (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
+                        ] = tileset.active + 1;
+                }
             }
         }
-
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            Vector2 pos = grid_get_position(
-                GetScreenToWorld2D(GetMousePosition(), tilemap_cam),
-                tilemap.tilewidth, tilemap.tileheight
-            );
-            if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
-                tilemap.layers[
-                    (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
-                    ] = 0;
+            Vector2 cursor = GetMousePosition();
+            if (!(cursor.x < (screen_width * 0.2f))) {
+                Vector2 pos = grid_get_position(
+                    GetScreenToWorld2D(cursor, tilemap_cam),
+                    tilemap.tilewidth, tilemap.tileheight
+                );
+                if (grid_is_position_valid(pos, tilemap.width, tilemap.height)) {
+                    tilemap.layers[
+                        (u32)((layer_current * tilemap.width * tilemap.height) + (pos.y * tilemap.width) + pos.x)
+                        ] = 0;
+                }
             }
         }
 
@@ -92,6 +111,7 @@ int main(void)
                   tilemap.tilewidth, tilemap.tileheight);
         EndMode2D();
 
+        DrawNuklear(ctx);
         EndDrawing();
     }
 
