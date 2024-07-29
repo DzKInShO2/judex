@@ -115,7 +115,7 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Load Texture"))  {
-                tileset_property.texture_path = sfd_open_dialog(&file_open_opt);
+                tileset_property.texture_path = (char *)sfd_open_dialog(&file_open_opt);
 
                 if (tileset_property.texture_path != NULL) {
                     UnloadTexture(texture);
