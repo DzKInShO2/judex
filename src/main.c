@@ -17,6 +17,11 @@ int main(void)
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "JuDex");
 
+    TileSet tileset = { 0 };
+    Texture2D texture = LoadTexture("res/default_tileset.png");
+
+    tileset_load(&tileset, &texture, 8, 8);
+
     while (!WindowShouldClose()) {
         /* Update */
         // Update Window Size Variables
@@ -28,8 +33,16 @@ int main(void)
         /* Draw */
         BeginDrawing();
         ClearBackground(BACKGROUND_COLOR);
+
+        tileset_draw(&tileset);
+        grid_draw(3, 3, 8, 8);
+
         EndDrawing();
     }
+
+    tileset_unload(&tileset);
+    UnloadTexture(texture);
+
     CloseWindow();
     return 0;
 }

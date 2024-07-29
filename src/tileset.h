@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+typedef struct Texture Texture2D;
 typedef struct Rectangle Rectangle;
 
 typedef struct {
@@ -11,9 +12,11 @@ typedef struct {
 
     u32 active;
     Rectangle *slices;
+    Texture2D *texture;
 } TileSet;
 
-void tileset_load(TileSet *tileset, const char *file_path, u16 tilewidth, u16 tileheight);
+void tileset_load(TileSet *tileset, Texture2D *texture, u16 tilewidth, u16 tileheight);
+void tileset_draw(TileSet *tileset);
 void tileset_unload(TileSet *tileset);
 
 #endif //_TILESET_H_
