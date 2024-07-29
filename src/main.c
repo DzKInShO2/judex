@@ -58,7 +58,7 @@ int main(void)
         i32 tilewidth, tileheight;
         i32 layer_count;
     } tilemap_property = {
-        8, 8,
+        60, 20,
         8, 8,
         6
     };
@@ -150,6 +150,10 @@ int main(void)
             if (nk_button_label(ctx, "Load"))  {
             }
             if (nk_button_label(ctx, "Save"))  {
+            }
+            
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (nk_button_label(ctx, "Save As"))  {
             }
         }
         nk_end(ctx);
