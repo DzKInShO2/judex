@@ -42,10 +42,10 @@ int main(void)
 
     struct {
         i32 tilewidth, tileheight;
-        char texture_path[1024];
+        char *texture_path;
     } tileset_property = { 
         8, 8,
-        ""
+        NULL
     };
 
     struct {
@@ -94,7 +94,7 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Apply Config"))  {
-                if (strcmp(tileset_property.texture_path, "")) {
+                if (tileset_property.texture_path) {
                     UnloadTexture(texture);
                     texture = LoadTexture(tileset_property.texture_path);
 
