@@ -17,6 +17,7 @@ typedef struct {
 
 void tileset_load(TileSet *tileset, Texture2D *texture, u16 tilewidth, u16 tileheight);
 void tileset_draw(TileSet *tileset);
+void tileset_set_active(TileSet *tileset, u16 x, u16 y);
 void tileset_unload(TileSet *tileset);
 
 #endif //_TILESET_H_

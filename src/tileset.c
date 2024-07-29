@@ -36,6 +36,11 @@ void tileset_draw(TileSet *tileset)
     );
 }
 
+void tileset_set_active(TileSet *tileset, u16 x, u16 y)
+{
+    tileset->active = (y * tileset->width) + x;
+}
+
 void tileset_unload(TileSet *tileset)
 {
     if (tileset->texture != NULL)
