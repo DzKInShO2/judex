@@ -2,6 +2,18 @@
 
 #include <raylib.h>
 
+void tilemap_copy_layer(u8 layer, u16 *dl, u16 dw, u16 dh, u16 *sl, u16 sw, u16 sh)
+{
+    u32 dlen = layer * (dw * dh);
+    u32 slen = layer * (sw * sh);
+
+    for (u16 x = 0; x < (dw > sw ? sw : dw); ++x) {
+        for (u16 y = 0; y < (dh > sh ? sh : dh); ++y) {
+            dl[((y * dw) + x) + dlen] = sl[((y * sw) + x) + slen];
+        }
+    }
+}
+
 TileMap tilemap_create(u16 width, u16 height, u16 tilewidth, u16 tileheight, u8 layer_count)
 {
     TileMap tilemap = { 0 };
@@ -27,6 +39,10 @@ void tilemap_change_property(TileMap *tilemap, u16 width, u16 height, u16 tilewi
 
     if (is_regenerated) {
         u16 *new_layers = calloc(width * height * layer_count, sizeof(*new_layers));
+
+        for (u8 i = 0; i < (layer_count > tilemap->layer_count ? tilemap->layer_count : layer_count); ++i) {
+            tilemap_copy_layer(i, new_layers, width, height, tilemap->layers, tilemap->width, tilemap->height);
+        }
 
         tilemap->width = width;
         tilemap->height = height;
