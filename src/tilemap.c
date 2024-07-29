@@ -1,5 +1,7 @@
 #include "tilemap.h"
 
+#include <raylib.h>
+
 TileMap tilemap_create(u16 width, u16 height, u16 tilewidth, u16 tileheight, u8 layer_count)
 {
     TileMap tilemap = { 0 };
@@ -46,6 +48,32 @@ void tilemap_change_property(TileMap *tilemap, u16 width, u16 height, u16 tilewi
 void tilemap_set_tile(TileMap *tilemap, u16 x, u16 y, u8 layer, u16 id)
 {
     tilemap->layers[(layer * tilemap->width * tilemap->height) + ((y * tilemap->width) + x)] = id;
+}
+
+void tilemap_draw_layer(TileMap *tilemap, TileSet *tileset, u8 layer)
+{
+    u32 k = (layer * tilemap->width * tilemap->height);
+    for (u16 i = 0; i < tilemap->width; ++i) {
+        for (u16 j = 0; j < tilemap->height; ++j) {
+            u16 l = tilemap->layers[k + ((j * tilemap->width) + i)];
+
+            if (l != 0) {
+                DrawTextureRec(
+                    *tileset->texture,
+                    tileset->slices[l - 1],
+                    (Vector2) { i * tilemap->tilewidth, j * tilemap->tileheight },
+                    WHITE
+                );
+            }
+        }
+    }
+}
+
+void tilemap_draw_all_layers(TileMap *tilemap, TileSet *tileset)
+{
+    for (u8 i = 0; i < tilemap->layer_count; ++i) {
+        tilemap_draw_layer(tilemap, tileset, i);
+    }
 }
 
 void tilemap_destroy(TileMap *tilemap)
