@@ -19,12 +19,17 @@ int main(void)
 {
     u32 screen_width = 1920;
     u32 screen_height = 1080;
+    u32 panel_width = screen_width * 0.2f;
+    u32 panel_height = screen_height * 0.6f;
+    u32 panel_offy = screen_height * 0.4f;
+    u32 panel_bound_x = screen_width * 0.205f;
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "JuDex");
+    SetExitKey(KEY_NULL);
 
     TileSet tileset = { 0 };
-    RenderTexture2D tileset_framebuffer = LoadRenderTexture(screen_width * 0.2f, screen_height * 0.4f);
+    RenderTexture2D tileset_framebuffer = LoadRenderTexture(panel_width, panel_offy);
     Camera2D tileset_viewport = { 0 };
     tileset_viewport.zoom = 3.0f;
     tileset_viewport.target.x -= 5.0f;
@@ -68,18 +73,24 @@ int main(void)
             screen_width = GetScreenWidth();
             screen_height = GetScreenHeight();
 
+            panel_width = screen_width * 0.2f;
+            panel_height = screen_height * 0.6f;
+
+            panel_offy = screen_height * 0.4f;
+            panel_bound_x = screen_width * 0.205f;
+
             viewport.offset.x = screen_width/3.0f;
             viewport.offset.y = screen_height/3.0f;
 
             UnloadRenderTexture(tileset_framebuffer);
-            tileset_framebuffer = LoadRenderTexture(screen_width * 0.2f, screen_height * 0.4f);
+            tileset_framebuffer = LoadRenderTexture(panel_width, panel_offy);
         }
 
         // Update Nuklear
         UpdateNuklear(ctx);
 
         if (nk_begin(ctx, "Options",
-                     nk_rect(1, (screen_height * 0.4f), (screen_width * 0.2f), (screen_height * 0.6f)),
+                     nk_rect(1, (panel_offy), panel_width, panel_height),
                      NK_WINDOW_BORDER)) {
             nk_layout_row_dynamic(ctx, 20, 1);
             nk_label(ctx, "Tileset Config", NK_TEXT_CENTERED);
@@ -148,23 +159,28 @@ int main(void)
         if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
             Vector2 mouse_delta = GetMouseDelta();
 
-            if (cursor.x > (screen_width * 0.2f)) {
+            if (cursor.x > (panel_width)) {
                 viewport.target.x -= mouse_delta.x * 0.5f * (1/viewport.zoom * 3.0f);
                 viewport.target.y -= mouse_delta.y * 0.5f * (1/viewport.zoom * 3.0f);
             } else {
-                if (cursor.y < (screen_height * 0.4f)) {
+                if (cursor.y < (panel_offy)) {
                     tileset_viewport.target.x -= mouse_delta.x * 0.25f * (1/tileset_viewport.zoom * 3.0f);
                     tileset_viewport.target.y -= mouse_delta.y * 0.25f * (1/tileset_viewport.zoom * 3.0f);
                 }
             }
         }
-        if (cursor.y < (screen_height * 0.4f) && cursor.x < (screen_width * 0.2f))
-            tileset_viewport.zoom += GetMouseWheelMove() * tileset_viewport.zoom * 0.15f;
-        else viewport.zoom += GetMouseWheelMove() * viewport.zoom * 0.25f;
+        if (IsKeyDown(KEY_LEFT_SHIFT)) {
+            i16 layer_next = layer_current + (i8)GetMouseWheelMove();
+            layer_current = layer_next >= 0 ? (layer_next < tilemap.layer_count ? layer_next : tilemap.layer_count - 1) : 0;
+        } else {
+            if (cursor.y < (panel_offy) && cursor.x < (panel_width))
+                tileset_viewport.zoom += GetMouseWheelMove() * tileset_viewport.zoom * 0.15f;
+            else viewport.zoom += GetMouseWheelMove() * viewport.zoom * 0.25f;
+        }
 
         // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            if (cursor.x > (screen_width * 0.205f)) {
+            if (cursor.x > panel_bound_x) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, viewport),
                     tilemap.tilewidth, tilemap.tileheight
@@ -183,7 +199,7 @@ int main(void)
             }
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            if (cursor.x > (screen_width * 0.205f)) {
+            if (cursor.x > panel_bound_x) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, viewport),
                     tilemap.tilewidth, tilemap.tileheight
@@ -226,6 +242,8 @@ int main(void)
             (Vector2){ 0, 0 },
             WHITE
         );
+        
+        DrawText(TextFormat("%i", layer_current + 1), panel_bound_x, 0, 32, WHITE);
         DrawNuklear(ctx);
         EndDrawing();
     }
