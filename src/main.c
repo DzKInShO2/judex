@@ -25,6 +25,11 @@ int main(void)
 
     tileset_load(&tileset, &texture, 8, 8);
 
+    Camera2D tilemap_cam = { 0 };
+    tilemap_cam.zoom = 2.0f;
+    tilemap_cam.offset.x = screen_width/3.0f;
+    tilemap_cam.offset.y = screen_height/3.0f;
+
     u8 layer_current = 0;
     while (!WindowShouldClose()) {
         /* Update */
@@ -32,12 +37,27 @@ int main(void)
         if (IsWindowResized()) {
             screen_width = GetScreenWidth();
             screen_height = GetScreenHeight();
+
+            tilemap_cam.offset.x = screen_width/3.0f;
+            tilemap_cam.offset.y = screen_height/3.0f;
         }
+
+        // Get Delta Time aka Time Passes Between Two Frames
+        // f64 dt = GetFrameTime();
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
+            Vector2 mouse_delta = GetMouseDelta();
+
+            tilemap_cam.target.x -= mouse_delta.x * 0.5f * (1/tilemap_cam.zoom * 3.0f);
+            tilemap_cam.target.y -= mouse_delta.y * 0.5f * (1/tilemap_cam.zoom * 3.0f);
+        }
+        tilemap_cam.zoom += GetMouseWheelMove() * tilemap_cam.zoom * 0.25f;
 
         /* Draw */
         BeginDrawing();
         ClearBackground(BACKGROUND_COLOR);
 
+        BeginMode2D(tilemap_cam);
         // Draw Tilemap Content
         if (tileset.texture) {
             tilemap_draw_layer(&tilemap, &tileset, layer_current);
@@ -46,6 +66,7 @@ int main(void)
         // Draw Tilemap Grid
         grid_draw(tilemap.width, tilemap.height,
                   tilemap.tilewidth, tilemap.tileheight);
+        EndMode2D();
 
         EndDrawing();
     }
