@@ -89,11 +89,18 @@ int main(void)
             nk_property_int(ctx, "Tile Height ", 0, &tileset_property.tileheight ,USHRT_MAX, 1, 1);
 
             nk_layout_row_dynamic(ctx, 30, 1);
-            if (nk_button_label(ctx, "Change Texture"))  {
+            if (nk_button_label(ctx, "Load Texture"))  {
             }
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Apply Config"))  {
+                if (strcmp(tileset_property.texture_path, "")) {
+                    UnloadTexture(texture);
+                    texture = LoadTexture(tileset_property.texture_path);
+
+                    tileset_unload(&tileset);
+                    tileset_load(&tileset, &texture, tileset_property.tilewidth, tileset_property.tileheight);
+                }
             }
 
             nk_layout_row_dynamic(ctx, 60, 1);
@@ -118,6 +125,18 @@ int main(void)
                 tilemap_change_property(&tilemap, tilemap_property.width, tilemap_property.height,
                                         tilemap_property.tilewidth, tilemap_property.tileheight,
                                         tilemap_property.layer_count);
+            }
+
+            nk_layout_row_dynamic(ctx, 60, 1);
+            nk_spacer(ctx);
+
+            nk_layout_row_dynamic(ctx, 20, 1);
+            nk_label(ctx, "Load/Save Tilemap", NK_TEXT_CENTERED);
+
+            nk_layout_row_dynamic(ctx, 30, 2);
+            if (nk_button_label(ctx, "Load"))  {
+            }
+            if (nk_button_label(ctx, "Save"))  {
             }
         }
         nk_end(ctx);
