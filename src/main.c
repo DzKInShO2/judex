@@ -68,8 +68,7 @@ int main(void)
         // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             Vector2 cursor = GetMousePosition();
-            if (!(cursor.x < (screen_width * 0.2f)
-                && cursor.y > (screen_height * 0.4))) {
+            if (cursor.x > (screen_width * 0.205f)) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, tilemap_cam),
                     tilemap.tilewidth, tilemap.tileheight
@@ -83,7 +82,7 @@ int main(void)
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
             Vector2 cursor = GetMousePosition();
-            if (!(cursor.x < (screen_width * 0.2f))) {
+            if (cursor.x > (screen_width * 0.205f)) {
                 Vector2 pos = grid_get_position(
                     GetScreenToWorld2D(cursor, tilemap_cam),
                     tilemap.tilewidth, tilemap.tileheight
