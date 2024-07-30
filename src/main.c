@@ -363,7 +363,6 @@ void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Textu
 {
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
-        fclose(fp);
         TraceLog(LOG_ERROR, "Failed to read file %s", path);
         return;
     }
@@ -393,7 +392,7 @@ void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Textu
         if ((len = getline(&line, &size, fp)) != -1) {
             u32 l = (i * tilemap->width * tilemap->height);
 
-            char *token;
+            char *token = " ";
             for (u16 x = 0; x < tilemap->width && token != NULL; ++x) {
                 for (u16 y = 0; y < tilemap->height && token != NULL; ++y) {
                     if (x == 0 && y == 0) token = strtok(line, ", ");
@@ -436,7 +435,6 @@ void judex_save_file(const char *path, const TileMap *tilemap, const TileSetProp
 {
     FILE *fp = fopen(path, "w");
     if (fp == NULL) {
-        fclose(fp);
         TraceLog(LOG_ERROR, "Failed to write file: %s", path);
         return;
     }
