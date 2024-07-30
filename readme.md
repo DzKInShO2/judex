@@ -18,4 +18,4 @@ make -B
 make run
 ```
 
-**Note:** This program has only been tested on Linux.
+**Note:** This program has only been tested working on Linux.
