@@ -1,5 +1,7 @@
+#include <ctype.h>
 #include <stdint.h>
 #include <limits.h>
+#include <libgen.h>
 #include <sys/stat.h>
 
 #include <raylib.h>
@@ -13,6 +15,8 @@
 #include "tilemap.h"
 #include "tileset.h"
 #include "colorscheme.h"
+
+#define SHORTCUT(a, b) (IsKeyDown(KEY_##a) && IsKeyPressed(KEY_##b))
 
 void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight);
 Vector2 grid_get_position(Vector2 world_position, u16 tilewidth, u16 tileheight);
@@ -55,10 +59,10 @@ int main(void)
 
     struct {
         i32 tilewidth, tileheight;
-        char *texture_path;
+        char texture_path[1024];
     } tileset_property = { 
         8, 8,
-        NULL
+        ""
     };
 
     struct {
@@ -85,16 +89,11 @@ int main(void)
         .filter = "*.jdx"
     };
 
-    sfd_Options file_export_opt = {
-        .title = "Export Tilemap as C Header File",
-        .extension = "h"
-    };
-
     /* Editor Property */
     u8 layer_current = 0;
     bool layer_is_all_visible = false;
     bool grid_is_visible = true;
-    char *save_path = NULL;
+    char save_path[1024] = "";
 
     /* Main Loop */
     while (!WindowShouldClose()) {
@@ -132,11 +131,12 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Load Texture"))  {
-                tileset_property.texture_path = (char *)sfd_open_dialog(&file_open_opt);
+                const char *path = (char *)sfd_open_dialog(&file_open_opt);
+                strcpy(tileset_property.texture_path, path);
 
                 struct stat path_stat; 
                 stat(tileset_property.texture_path, &path_stat);
-                if (tileset_property.texture_path != NULL
+                if (strcmp(tileset_property.texture_path, "") != 0
                     && S_ISREG(path_stat.st_mode)) {
                     UnloadTexture(texture);
                     texture = LoadTexture(tileset_property.texture_path);
@@ -148,7 +148,7 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Apply Config"))  {
-                if (tileset_property.texture_path != NULL) {
+                if (strcmp(tileset_property.texture_path, "") != 0) {
                     tileset_unload(&tileset);
                     tileset_load(&tileset, &texture, tileset_property.tilewidth, tileset_property.tileheight);
                 }
@@ -185,7 +185,7 @@ int main(void)
             nk_label(ctx, "Load/Save Tilemap", NK_TEXT_CENTERED);
 
             nk_layout_row_dynamic(ctx, 30, 2);
-            if (nk_button_label(ctx, "Load"))  {
+            if (nk_button_label(ctx, "Load") || SHORTCUT(LEFT_CONTROL, O))  {
                 const char *path = sfd_open_dialog(&file_save_opt);
 
                 struct stat path_stat; 
@@ -193,37 +193,48 @@ int main(void)
 
                 if (path != NULL && S_ISREG(path_stat.st_mode)) {
                     judex_load_file(path, &tilemap);
-                    save_path = (char *)path;
+                    strcpy(save_path, path);
+
+                    tilemap_property.width = tilemap.width;
+                    tilemap_property.height = tilemap.height;
+                    tilemap_property.tilewidth = tilemap.tilewidth;
+                    tilemap_property.tileheight = tilemap.tileheight;
+                    tilemap_property.layer_count = tilemap.layer_count;
                 }
             }
-            if (nk_button_label(ctx, "Save"))  {
-                if (save_path != NULL) {
+            if (nk_button_label(ctx, "Save") || SHORTCUT(LEFT_CONTROL, S))  {
+                if (strcmp(save_path, "") != 0) {
                     judex_save_file(save_path, &tilemap);
                 } else {
-                    save_path = (char *)sfd_save_dialog(&file_save_opt);
+                    const char *path = sfd_save_dialog(&file_save_opt);
+                    strcpy(save_path, path);
 
                     struct stat path_stat; 
                     stat(save_path, &path_stat);
 
-                    if (save_path != NULL && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
-                    else save_path = NULL;
+                    if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                    else save_path[0] = '\0';
                 }
             }
             
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Save As"))  {
-                save_path = (char *)sfd_save_dialog(&file_save_opt);
+                const char *path = sfd_save_dialog(&file_save_opt);
+                strcpy(save_path, path);
 
                 struct stat path_stat; 
                 stat(save_path, &path_stat);
 
-                if (save_path != NULL && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
-                else save_path = NULL;
+                if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                else save_path[0] = '\0';
             }
 
             nk_layout_row_dynamic(ctx, 30, 1);
-            if (nk_button_label(ctx, "Export as C Header File")) {
-                TraceLog(LOG_INFO, "%s", sfd_save_dialog(&file_export_opt));
+            if (nk_button_label(ctx, "New Map"))  {
+                tilemap_destroy(&tilemap);
+                tilemap = tilemap_create(tilemap_property.width, tilemap_property.height,
+                                         tilemap_property.tilewidth, tilemap_property.tileheight,
+                                         tilemap_property.layer_count);
             }
         }
         nk_end(ctx);
@@ -255,9 +266,9 @@ int main(void)
         }
 
         // Toggle Grid
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_SPACE)) grid_is_visible = !grid_is_visible;
+        if (SHORTCUT(LEFT_CONTROL, SPACE)) grid_is_visible = !grid_is_visible;
         // Toggle All Layer Visible
-        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_A)) layer_is_all_visible = !layer_is_all_visible;
+        if (SHORTCUT(LEFT_CONTROL, A)) layer_is_all_visible = !layer_is_all_visible;
 
         // Handle Tile Placement
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
@@ -392,6 +403,7 @@ void judex_load_file(const char *path, TileMap *tilemap)
         free((void *)line);
 
     fclose(fp);
+    TraceLog(LOG_INFO, "Tilemap [%s] Successfully Loaded", path);
 }
 
 void judex_save_file(const char *path, const TileMap *tilemap)
@@ -422,8 +434,8 @@ void judex_save_file(const char *path, const TileMap *tilemap)
         fprintf(fp, "\n");
     }
 
-    TraceLog(LOG_INFO, "File Successfully Saved at %s", path);
     fclose(fp);
+    TraceLog(LOG_INFO, "File Successfully Saved at %s", path);
 }
 
 void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight)
