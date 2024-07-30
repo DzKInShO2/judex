@@ -18,12 +18,17 @@
 
 #define SHORTCUT(a, b) (IsKeyDown(KEY_##a) && IsKeyPressed(KEY_##b))
 
+typedef struct {
+    i32 tilewidth, tileheight;
+    char texture_path[1024];
+} TileSetProperty;
+
 void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight);
 Vector2 grid_get_position(Vector2 world_position, u16 tilewidth, u16 tileheight);
 bool grid_is_position_valid(Vector2 grid_position, u16 width, u16 height);
 
-void judex_load_file(const char *path, TileMap *tilemap);
-void judex_save_file(const char *path, const TileMap *tilemap);
+void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture);
+void judex_save_file(const char *path, const TileMap *tilemap, const TileSetProperty *tileset_property);
 
 int main(void)
 {
@@ -57,10 +62,7 @@ int main(void)
     viewport.offset.x = screen_width/3.0f;
     viewport.offset.y = screen_height/3.0f;
 
-    struct {
-        i32 tilewidth, tileheight;
-        char texture_path[1024];
-    } tileset_property = { 
+    TileSetProperty tileset_property = { 
         8, 8,
         ""
     };
@@ -192,7 +194,7 @@ int main(void)
                 stat(path, &path_stat);
 
                 if (path != NULL && S_ISREG(path_stat.st_mode)) {
-                    judex_load_file(path, &tilemap);
+                    judex_load_file(path, &tilemap, &tileset, &texture);
                     strcpy(save_path, path);
 
                     tilemap_property.width = tilemap.width;
@@ -204,7 +206,7 @@ int main(void)
             }
             if (nk_button_label(ctx, "Save") || SHORTCUT(LEFT_CONTROL, S))  {
                 if (strcmp(save_path, "") != 0) {
-                    judex_save_file(save_path, &tilemap);
+                    judex_save_file(save_path, &tilemap, &tileset_property);
                 } else {
                     const char *path = sfd_save_dialog(&file_save_opt);
                     strcpy(save_path, path);
@@ -212,7 +214,7 @@ int main(void)
                     struct stat path_stat; 
                     stat(save_path, &path_stat);
 
-                    if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                    if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
                     else save_path[0] = '\0';
                 }
             }
@@ -225,7 +227,7 @@ int main(void)
                 struct stat path_stat; 
                 stat(save_path, &path_stat);
 
-                if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
                 else save_path[0] = '\0';
             }
 
@@ -356,7 +358,7 @@ int main(void)
     return 0;
 }
 
-void judex_load_file(const char *path, TileMap *tilemap)
+void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture)
 {
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
@@ -381,6 +383,8 @@ void judex_load_file(const char *path, TileMap *tilemap)
     } else {
         TraceLog(LOG_ERROR, "Can't read file %s", path);
         fclose(fp);
+        if (line != NULL)
+            free((void *)line);
         return;
     }
 
@@ -399,6 +403,23 @@ void judex_load_file(const char *path, TileMap *tilemap)
         }
     }
 
+    if ((len = getline(&line, &size, fp)) != -1) {
+        u16 tilewidth = atoi(strtok(line, ", "));
+        u16 tileheight = atoi(strtok(NULL, ", "));
+
+        if ((len = getline(&line, &size, fp)) != -1) {
+            UnloadTexture(*texture);
+            *texture = LoadTexture(line);
+
+            tileset_unload(tileset);
+            tileset_load(tileset, texture, tilewidth, tileheight);
+        } else {
+            TraceLog(LOG_WARNING, "Can't read tileset path in file %s", path);
+        }
+    } else {
+        TraceLog(LOG_WARNING, "Can't read tileset in file %s", path);
+    }
+
     if (line != NULL)
         free((void *)line);
 
@@ -406,7 +427,7 @@ void judex_load_file(const char *path, TileMap *tilemap)
     TraceLog(LOG_INFO, "Tilemap [%s] Successfully Loaded", path);
 }
 
-void judex_save_file(const char *path, const TileMap *tilemap)
+void judex_save_file(const char *path, const TileMap *tilemap, const TileSetProperty *tileset_property)
 {
     FILE *fp = fopen(path, "w");
     if (fp == NULL) {
@@ -433,6 +454,9 @@ void judex_save_file(const char *path, const TileMap *tilemap)
         }
         fprintf(fp, "\n");
     }
+
+    fprintf(fp, "%i, %i\n", tileset_property->tilewidth, tileset_property->tileheight);
+    fprintf(fp, "%s", tileset_property->texture_path);
 
     fclose(fp);
     TraceLog(LOG_INFO, "File Successfully Saved at %s", path);
