@@ -205,7 +205,7 @@ int main(void)
                 }
             }
             if (nk_button_label(ctx, "Save") || SHORTCUT(LEFT_CONTROL, S))  {
-                if (strcmp(save_path, "") != 0) {
+                if (save_path[0] != '\0') {
                     judex_save_file(save_path, &tilemap, &tileset_property);
                 } else {
                     const char *path = sfd_save_dialog(&file_save_opt);
@@ -214,7 +214,7 @@ int main(void)
                     struct stat path_stat; 
                     stat(save_path, &path_stat);
 
-                    if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
+                    if (save_path[0] != '\0' && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
                     else save_path[0] = '\0';
                 }
             }
@@ -227,7 +227,7 @@ int main(void)
                 struct stat path_stat; 
                 stat(save_path, &path_stat);
 
-                if (strcmp(save_path, "") != 0 && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
+                if (save_path[0] != '\0' && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap, &tileset_property);
                 else save_path[0] = '\0';
             }
 
@@ -237,6 +237,7 @@ int main(void)
                 tilemap = tilemap_create(tilemap_property.width, tilemap_property.height,
                                          tilemap_property.tilewidth, tilemap_property.tileheight,
                                          tilemap_property.layer_count);
+                save_path[0] = '\0';
             }
         }
         nk_end(ctx);
