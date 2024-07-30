@@ -18,6 +18,9 @@ void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight);
 Vector2 grid_get_position(Vector2 world_position, u16 tilewidth, u16 tileheight);
 bool grid_is_position_valid(Vector2 grid_position, u16 width, u16 height);
 
+void judex_load_file(const char *path, TileMap *tilemap);
+void judex_save_file(const char *path, const TileMap *tilemap);
+
 int main(void)
 {
     u32 screen_width = 1920;
@@ -75,10 +78,23 @@ int main(void)
         .filter = "*.png|*.jpg"
     };
 
+    sfd_Options file_save_opt = {
+        .title = "Save Tilemap",
+        .extension = "jdx",
+        .filter_name = "JuDex Tilemap File",
+        .filter = "*.jdx"
+    };
+
+    sfd_Options file_export_opt = {
+        .title = "Export Tilemap as C Header File",
+        .extension = "h"
+    };
+
     /* Editor Property */
     u8 layer_current = 0;
     bool layer_is_all_visible = false;
     bool grid_is_visible = true;
+    char *save_path = NULL;
 
     /* Main Loop */
     while (!WindowShouldClose()) {
@@ -170,12 +186,44 @@ int main(void)
 
             nk_layout_row_dynamic(ctx, 30, 2);
             if (nk_button_label(ctx, "Load"))  {
+                const char *path = sfd_open_dialog(&file_save_opt);
+
+                struct stat path_stat; 
+                stat(path, &path_stat);
+
+                if (path != NULL && S_ISREG(path_stat.st_mode)) {
+                    judex_load_file(path, &tilemap);
+                    save_path = (char *)path;
+                }
             }
             if (nk_button_label(ctx, "Save"))  {
+                if (save_path != NULL) {
+                    judex_save_file(save_path, &tilemap);
+                } else {
+                    save_path = (char *)sfd_save_dialog(&file_save_opt);
+
+                    struct stat path_stat; 
+                    stat(save_path, &path_stat);
+
+                    if (save_path != NULL && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                    else save_path = NULL;
+                }
             }
             
             nk_layout_row_dynamic(ctx, 30, 1);
             if (nk_button_label(ctx, "Save As"))  {
+                save_path = (char *)sfd_save_dialog(&file_save_opt);
+
+                struct stat path_stat; 
+                stat(save_path, &path_stat);
+
+                if (save_path != NULL && S_ISREG(path_stat.st_mode)) judex_save_file(save_path, &tilemap);
+                else save_path = NULL;
+            }
+
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (nk_button_label(ctx, "Export as C Header File")) {
+                TraceLog(LOG_INFO, "%s", sfd_save_dialog(&file_export_opt));
             }
         }
         nk_end(ctx);
@@ -295,6 +343,87 @@ int main(void)
 
     CloseWindow();
     return 0;
+}
+
+void judex_load_file(const char *path, TileMap *tilemap)
+{
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) {
+        fclose(fp);
+        TraceLog(LOG_ERROR, "Failed to read file %s", path);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t len = 0;
+    size_t size = 0;
+
+    if ((len = getline(&line, &size, fp)) != -1) {
+        u16 width, height;
+        u16 tilewidth, tileheight;
+        u8 layer_count;
+        sscanf(line, "%hu, %hu, %hu, %hu, %hhu",
+               &width, &height,
+               &tilewidth, &tileheight,
+               &layer_count);
+        tilemap_change_property(tilemap, width, height, tilewidth, tileheight, layer_count);
+    } else {
+        TraceLog(LOG_ERROR, "Can't read file %s", path);
+        fclose(fp);
+        return;
+    }
+
+    for (u8 i = 0; i < tilemap->layer_count; ++i) {
+        if ((len = getline(&line, &size, fp)) != -1) {
+            u32 l = (i * tilemap->width * tilemap->height);
+
+            char *token;
+            for (u16 x = 0; x < tilemap->width && token != NULL; ++x) {
+                for (u16 y = 0; y < tilemap->height && token != NULL; ++y) {
+                    if (x == 0 && y == 0) token = strtok(line, ", ");
+                    else token = strtok(NULL, ", ");
+                    tilemap->layers[l + ((y * tilemap->width) + x)] = atoi(token);
+                }
+            }
+        }
+    }
+
+    if (line != NULL)
+        free((void *)line);
+
+    fclose(fp);
+}
+
+void judex_save_file(const char *path, const TileMap *tilemap)
+{
+    FILE *fp = fopen(path, "w");
+    if (fp == NULL) {
+        fclose(fp);
+        TraceLog(LOG_ERROR, "Failed to write file: %s", path);
+        return;
+    }
+
+    fprintf(fp, "%i, %i, %i, %i, %i\n",
+            tilemap->width, tilemap->height,
+            tilemap->tilewidth, tilemap->tileheight,
+            tilemap->layer_count);
+
+    for (u8 i = 0; i < tilemap->layer_count; ++i) {
+         u32 l = i * tilemap->width * tilemap->height;
+         for (u16 x = 0; x < tilemap->width; ++x) {
+            for (u16 y = 0; y < tilemap->height; ++y) {
+                if (x == 0 && y == 0) {
+                    fprintf(fp, "%i", tilemap->layers[l + ((y * tilemap->width) + x)]);
+                    continue;
+                }
+                fprintf(fp, ", %i", tilemap->layers[l + ((y * tilemap->width) + x)]);
+            }
+        }
+        fprintf(fp, "\n");
+    }
+
+    TraceLog(LOG_INFO, "File Successfully Saved at %s", path);
+    fclose(fp);
 }
 
 void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight)
