@@ -11,3 +11,11 @@ _Tile Data_
 _Tileset Tile Width_, _Tileset Tile height_
 _Tileset Texture Path_
 ```
+
+## Quick Start
+```
+make -B
+make run
+```
+
+**Note:** This program has only been tested on Linux.
