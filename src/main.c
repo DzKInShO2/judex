@@ -27,7 +27,7 @@ void grid_draw(u16 width, u16 height, u16 tilewidth, u16 tileheight);
 Vector2 grid_get_position(Vector2 world_position, u16 tilewidth, u16 tileheight);
 bool grid_is_position_valid(Vector2 grid_position, u16 width, u16 height);
 
-void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture);
+void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture, TileSetProperty *tileset_property);
 void judex_save_file(const char *path, const TileMap *tilemap, const TileSetProperty *tileset_property);
 
 int main(void)
@@ -194,7 +194,7 @@ int main(void)
                 stat(path, &path_stat);
 
                 if (path != NULL && S_ISREG(path_stat.st_mode)) {
-                    judex_load_file(path, &tilemap, &tileset, &texture);
+                    judex_load_file(path, &tilemap, &tileset, &texture, &tileset_property);
                     strcpy(save_path, path);
 
                     tilemap_property.width = tilemap.width;
@@ -359,7 +359,7 @@ int main(void)
     return 0;
 }
 
-void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture)
+void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Texture2D *texture, TileSetProperty *tileset_property)
 {
     FILE *fp = fopen(path, "r");
     if (fp == NULL) {
@@ -414,6 +414,10 @@ void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Textu
 
             tileset_unload(tileset);
             tileset_load(tileset, texture, tilewidth, tileheight);
+
+            tileset_property->tilewidth = tileset->tilewidth;
+            tileset_property->tileheight = tileset->tileheight;
+            strcpy(tileset_property->texture_path, line);
         } else {
             TraceLog(LOG_WARNING, "Can't read tileset path in file %s", path);
         }
