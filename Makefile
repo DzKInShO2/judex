@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wpedantic
 LDFLAGS = -lraylib 
 
 all:
-	cc -o judex ${SOURCES} ${INCLUDES} ${CFLAGS} ${LDFLAGS} -ggdb
+	cc -o judex ${SOURCES} ${INCLUDES} ${CFLAGS} ${LDFLAGS} -O2
 
 run:
 	./judex
