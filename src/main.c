@@ -42,6 +42,7 @@ int main(void)
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screen_width, screen_height, "JuDex");
     SetExitKey(KEY_NULL);
+    SetTargetFPS(60);
 
     struct nk_context *ctx = InitNuklear(14);
 
