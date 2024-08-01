@@ -394,8 +394,8 @@ void judex_load_file(const char *path, TileMap *tilemap, TileSet *tileset, Textu
             u32 l = (i * tilemap->width * tilemap->height);
 
             char *token = " ";
-            for (u16 x = 0; x < tilemap->width && token != NULL; ++x) {
-                for (u16 y = 0; y < tilemap->height && token != NULL; ++y) {
+            for (u16 y = 0; y < tilemap->height && token != NULL; ++y) {
+                for (u16 x = 0; x < tilemap->width && token != NULL; ++x) {
                     if (x == 0 && y == 0) token = strtok(line, ", ");
                     else token = strtok(NULL, ", ");
                     tilemap->layers[l + ((y * tilemap->width) + x)] = atoi(token);
@@ -446,9 +446,9 @@ void judex_save_file(const char *path, const TileMap *tilemap, const TileSetProp
             tilemap->layer_count);
 
     for (u8 i = 0; i < tilemap->layer_count; ++i) {
-         u32 l = i * tilemap->width * tilemap->height;
-         for (u16 x = 0; x < tilemap->width; ++x) {
-            for (u16 y = 0; y < tilemap->height; ++y) {
+        u32 l = i * tilemap->width * tilemap->height;
+        for (u16 y = 0; y < tilemap->height; ++y) {
+             for (u16 x = 0; x < tilemap->width; ++x) {
                 if (x == 0 && y == 0) {
                     fprintf(fp, "%i", tilemap->layers[l + ((y * tilemap->width) + x)]);
                     continue;

@@ -7,8 +7,8 @@ void tilemap_copy_layer(u8 layer, u16 *dl, u16 dw, u16 dh, u16 *sl, u16 sw, u16 
     u32 dlen = layer * (dw * dh);
     u32 slen = layer * (sw * sh);
 
-    for (u16 x = 0; x < (dw > sw ? sw : dw); ++x) {
-        for (u16 y = 0; y < (dh > sh ? sh : dh); ++y) {
+    for (u16 y = 0; y < (dh > sh ? sh : dh); ++y) {
+        for (u16 x = 0; x < (dw > sw ? sw : dw); ++x) {
             dl[((y * dw) + x) + dlen] = sl[((y * sw) + x) + slen];
         }
     }
@@ -61,8 +61,8 @@ void tilemap_set_tile(TileMap *tilemap, u16 x, u16 y, u8 layer, u16 id)
 void tilemap_draw_layer(TileMap *tilemap, TileSet *tileset, u8 layer)
 {
     u32 k = (layer * tilemap->width * tilemap->height);
-    for (u16 i = 0; i < tilemap->width; ++i) {
-        for (u16 j = 0; j < tilemap->height; ++j) {
+    for (u16 j = 0; j < tilemap->height; ++j) {
+        for (u16 i = 0; i < tilemap->width; ++i) {
             u16 l = tilemap->layers[k + ((j * tilemap->width) + i)];
 
             if (l != 0) {

@@ -17,8 +17,8 @@ void tileset_load(TileSet *tileset, Texture2D *texture, u16 tilewidth, u16 tileh
         tileset->height = texture->height/tileset->tileheight;
 
         tileset->slices = calloc(tileset->width * tileset->height, sizeof(*tileset->slices));
-        for (u16 i = 0; i < tileset->width; ++i) {
-            for (u16 j = 0; j < tileset->height; ++j) {
+        for (u16 j = 0; j < tileset->height; ++j) {
+            for (u16 i = 0; i < tileset->width; ++i) {
                 tileset->slices[(j * tileset->width) + i] = (Rectangle){
                     i * tilewidth, j * tileheight,
                     tilewidth, tileheight
